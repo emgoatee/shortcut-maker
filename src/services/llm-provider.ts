@@ -78,6 +78,54 @@ export class AnthropicProvider implements LLMProvider {
 }
 
 /**
+ * OpenAI provider
+ */
+export class OpenAIProvider implements LLMProvider {
+  private apiKey: string;
+  private defaultModel: string;
+
+  constructor(apiKey?: string, defaultModel = "gpt-4o") {
+    this.apiKey = apiKey || process.env.OPENAI_API_KEY || "";
+    this.defaultModel = defaultModel;
+  }
+
+  async generate(request: LLMRequest): Promise<LLMResponse> {
+    if (!this.apiKey) {
+      throw new Error("OpenAI API key not configured");
+    }
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: request.model || this.defaultModel,
+        messages: request.messages,
+        temperature: request.temperature ?? 0.7,
+        max_tokens: request.maxTokens || 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`OpenAI API error: ${error.error?.message || "Unknown error"}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content || "";
+    const tokensUsed = data.usage?.total_tokens || 0;
+
+    return {
+      content,
+      tokensUsed,
+      model: data.model,
+    };
+  }
+}
+
+/**
  * Mock provider for testing
  */
 export class MockLLMProvider implements LLMProvider {
@@ -110,6 +158,8 @@ export function getLLMProvider(): LLMProvider {
   switch (provider) {
     case "anthropic":
       return new AnthropicProvider();
+    case "openai":
+      return new OpenAIProvider();
     case "mock":
       return new MockLLMProvider();
     default:

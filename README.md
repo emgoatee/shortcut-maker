@@ -27,7 +27,9 @@ An AI-powered web application that generates step-by-step instructions for build
 ### Prerequisites
 
 - Node.js 20+ and npm
-- An Anthropic API key ([get one here](https://console.anthropic.com/))
+- An API key from either:
+  - OpenAI ([get one here](https://platform.openai.com/api-keys)) - Recommended
+  - Anthropic ([get one here](https://console.anthropic.com/))
 
 ### Installation
 
@@ -47,8 +49,17 @@ An AI-powered web application that generates step-by-step instructions for build
    cp .env.example .env
    ```
 
-   Edit `.env` and add your Anthropic API key:
+   Edit `.env` and add your API key:
+
+   **For OpenAI (Recommended):**
    ```
+   LLM_PROVIDER=openai
+   OPENAI_API_KEY=your-api-key-here
+   ```
+
+   **Or for Anthropic:**
+   ```
+   LLM_PROVIDER=anthropic
    ANTHROPIC_API_KEY=your-api-key-here
    ```
 
@@ -185,25 +196,32 @@ Run end-to-end tests with Playwright. The dev server starts automatically.
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add `ANTHROPIC_API_KEY` environment variable
+3. Add environment variables:
+   - `LLM_PROVIDER=openai` (or `anthropic`)
+   - `OPENAI_API_KEY=your-key` (or `ANTHROPIC_API_KEY`)
 4. Deploy
 
 ### Docker
 
 ```bash
 docker build -t shortcut-maker .
-docker run -p 3000:3000 -e ANTHROPIC_API_KEY=your-key shortcut-maker
+# For OpenAI:
+docker run -p 3000:3000 -e LLM_PROVIDER=openai -e OPENAI_API_KEY=your-key shortcut-maker
+# For Anthropic:
+docker run -p 3000:3000 -e LLM_PROVIDER=anthropic -e ANTHROPIC_API_KEY=your-key shortcut-maker
 ```
 
 ## Environment Variables
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | Yes* | - | Anthropic API key for Claude |
-| `LLM_PROVIDER` | No | `anthropic` | LLM provider (`anthropic` or `mock`) |
+| `LLM_PROVIDER` | No | `anthropic` | LLM provider: `openai`, `anthropic`, or `mock` |
+| `OPENAI_API_KEY` | Yes* | - | OpenAI API key (required if using OpenAI) |
+| `OPENAI_MODEL` | No | `gpt-4o` | OpenAI model: `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo` |
+| `ANTHROPIC_API_KEY` | Yes* | - | Anthropic API key (required if using Anthropic) |
 | `ANTHROPIC_MODEL` | No | `claude-sonnet-4-20250514` | Claude model to use |
 
-\* Not required if using `LLM_PROVIDER=mock` for testing
+\* API key required based on chosen provider. Not needed if using `LLM_PROVIDER=mock` for testing
 
 ## Limitations
 
